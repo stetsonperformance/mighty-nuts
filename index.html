@@ -472,23 +472,47 @@ function selectYN(choice) {
   document.getElementById('btn-no').className = 'yn-btn' + (choice === 'no' ? ' selected-no' : '');
 }
 
-function submitForm() {
+async function submitForm() {
+  const submitBtn = document.querySelector('.submit-btn');
+
+  // Collect data
   const data = {
-    taste: document.getElementById('taste').value,
-    texture: document.getElementById('texture').value,
-    packaging: document.getElementById('packaging').value,
-    wouldBuy: ynAnswer,
-    price: document.getElementById('price').value,
-    changes: document.getElementById('changes').value,
-    flavors: document.getElementById('flavors').value,
-    submittedAt: new Date().toISOString()
+    'Taste (1-10)':      document.getElementById('taste').value,
+    'Texture (1-10)':    document.getElementById('texture').value,
+    'Packaging (1-10)':  document.getElementById('packaging').value,
+    'Would Buy':         ynAnswer || 'No answer',
+    'Price Per Pouch':   '$' + document.getElementById('price').value,
+    'What Would You Change': document.getElementById('changes').value || 'No response',
+    'Flavor Suggestions':    document.getElementById('flavors').value || 'No response',
+    '_subject': 'New Mighty Nutz Feedback Submission'
   };
 
-  // Log to console (replace with your form submission endpoint or Google Form prefill URL)
-  console.log('Mighty Nutz Feedback:', data);
+  // Show loading state
+  submitBtn.textContent = 'SENDING...';
+  submitBtn.disabled = true;
+  submitBtn.style.opacity = '0.7';
 
-  document.getElementById('form-section').style.display = 'none';
-  document.getElementById('thank-you-section').style.display = 'block';
+  try {
+    const response = await fetch('https://formspree.io/f/mojodwyk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      // Success — show thank you
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('thank-you-section').style.display = 'block';
+    } else {
+      throw new Error('Submission failed');
+    }
+  } catch (err) {
+    // Reset button and show error
+    submitBtn.textContent = 'SUBMIT FEEDBACK →';
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+    alert('Something went wrong. Please try again or check your connection.');
+  }
 }
 </script>
 </body>
